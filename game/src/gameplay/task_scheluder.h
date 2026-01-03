@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 typedef size_t wid_t;
-#define WORK_POOL_CAPACITY 128
+#define WORK_POOL_CAPACITY 512
 #define WORK_INVALID ((wid_t)-1)
 
 typedef struct Work 

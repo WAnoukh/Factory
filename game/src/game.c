@@ -24,6 +24,7 @@
 
 void game_start(struct Game *game)
 {
+    game->time_scale = 1;
     game->camera = camera_get_default();
     rendering_set_camera(&game->camera);
     game->level = level_create_empty(20, 20, game->arenas->level);
@@ -53,7 +54,7 @@ int cur_tile = 1;
 int cur_tile_x;
 int cur_tile_y;
 
-void pixel_to_world(struct Camera *camera, struct WindowContext *window, vec2 pixel, vec2 out_world)
+void pixel_to_world(struct Camera *camera, struct WindowContext *window, const vec2 pixel, vec2 out_world)
 {
     camera_screen_to_world(camera, (vec2){
             pixel[0] / (float)window->width, 
@@ -70,6 +71,9 @@ void game_update(struct Game *game, struct FrameContext *frame)
     struct InputInfo        inputs = frame->inputs;
     struct WindowContext    window = frame->window;
     struct Engine *         engine = game->engine;
+
+    frame->dt = frame->real_dt * game->time_scale;
+    frame->time += frame->dt;
 
     if(is_key_pressed(inputs, GLFW_KEY_ESCAPE))
     {
@@ -129,7 +133,7 @@ void game_update(struct Game *game, struct FrameContext *frame)
                 Error err = workpool_add_task(&game->workpool, work_create(tile_pos, cur_tile));
                 if(err)
                 {
-                    LOG_INFO("To many tasks !");
+                    LOG_ERROR("To many tasks !");
                     break;
                 }
             }
@@ -147,7 +151,6 @@ void game_update(struct Game *game, struct FrameContext *frame)
         {
             if(workpool_own_first(&game->workpool, &available_work) == ERR_OK)
             {
-                LOG_INFO("Available task n%zu assigned to worker n%d", available_work, i);
                 worker->state = WS_REACHING;
                 worker->work = available_work;
             }
@@ -163,7 +166,6 @@ void game_update(struct Game *game, struct FrameContext *frame)
             if(target_dist < 0.5f)
             {
                 worker->state = WS_WORKING;
-                LOG_INFO("Worker n%d started working.", i);
             }
             else
             {
@@ -184,7 +186,6 @@ void game_update(struct Game *game, struct FrameContext *frame)
                 worker->state = WS_IDLE;
                 worker->work = WORK_INVALID;
                 tilemap_set_tile(&game->level->tilemap, work->tile, work->position[0], work->position[1]);
-                LOG_INFO("Task n%zu completed by worker n%d", worker->work, i);
             }
             else
             {
@@ -208,7 +209,6 @@ void game_update(struct Game *game, struct FrameContext *frame)
         {
             Work *work = workpool_get(&game->workpool, work_index);
             workpool_remove_owned(&game->workpool, work_index);
-            LOG_INFO("Assigned task n%zu: pos[%d,%d] tile%d", work_index, work->position[0], work->position[1], work->tile);
         }
         else { LOG_ERROR("No available tasks"); }
     }
@@ -236,12 +236,12 @@ void game_update(struct Game *game, struct FrameContext *frame)
     {
         unsigned int shader = shaders_use_atlas(get_atlas_tilemap(), cur_tile_x, cur_tile_y);
 
-        for(float x = bound_min[0]; x < bound_max[0]; x+=1)
+        for(int x = (int)bound_min[0]; x < (int)bound_max[0]; x+=1)
         {
-            for(float y = bound_min[1]; y < bound_max[1]; ++y)
+            for(int y = (int)bound_min[1]; y < (int)bound_max[1]; ++y)
             {
                 mat3 tile_transform;
-                vec2 tile_pos = {x+0.5f, y+0.5f};
+                vec2 tile_pos = {(float)x+0.5f, (float)y+0.5f};
                 compute_transform(tile_transform, tile_pos, (vec2){1,1});
                 draw_transformed_quad(shader, tile_transform, (float[]){1, 1, 1}, 0.25f);
             }

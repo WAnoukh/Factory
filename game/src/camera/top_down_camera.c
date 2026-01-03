@@ -73,7 +73,7 @@ void process_panning(struct TDCamera *tdcamera, struct FrameContext *frame)
     {
         glm_vec2_scale(
                 input, 
-                glm_min(pan_max_speed, speed_norm + pan_acc * frame->dt), 
+                glm_min(pan_max_speed, speed_norm + pan_acc * frame->real_dt), 
                 speed 
                 );
     }
@@ -82,10 +82,10 @@ void process_panning(struct TDCamera *tdcamera, struct FrameContext *frame)
         glm_vec2_normalize(speed);
         glm_vec2_scale(
                 speed,
-                glm_max(0, speed_norm - pan_dec * frame->dt),
+                glm_max(0, speed_norm - pan_dec * frame->real_dt),
                 speed
                 );
     }
     glm_vec2_copy(speed, tdcamera->pan_speed);
-    glm_vec2_muladds(speed, frame->dt / cam->zoom, cam->pos);
+    glm_vec2_muladds(speed, frame->real_dt / cam->zoom, cam->pos);
 }

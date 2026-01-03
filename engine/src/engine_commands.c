@@ -1,5 +1,6 @@
 #include "engine_commands.h"
 #include "console/command/commands.h"
+#include "rendering/texture.h"
 #include <stdlib.h>
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #define CIMGUI_USE_OPENGL3
@@ -25,9 +26,15 @@ void command_uiscale(struct CommandContext *cctx, StringView args, BString *out)
     style->FontScaleMain = scale;
 }
 
+void command_reload_art(struct CommandContext *cctx, StringView args, BString *out)
+{
+    load_default_images();
+}
+
 void engine_register_commands()
 {
     console_clear_commands();
     command_register_base(); 
     console_register_command(VIEW_FROM_CONST_STR("uiscale"), command_uiscale);
+    console_register_command(VIEW_FROM_CONST_STR("rel_art"), command_reload_art);
 }

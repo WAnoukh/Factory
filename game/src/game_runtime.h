@@ -21,6 +21,8 @@ struct FrameContext
     struct InputInfo        inputs;
     float                   dt;
     float                   time;
+    float                   real_dt;
+    float                   real_time;
 };
 
 Error game_build(struct Game *game, GLFWwindow *window, struct Arena *arena);

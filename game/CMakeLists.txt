@@ -6,6 +6,7 @@ target_sources(game
     PRIVATE 
     ./src/game.c
     ./src/game_runtime.c
+    ./src/game_commands.c
 
     ./src/camera/top_down_camera.c
 

@@ -3,6 +3,7 @@
 #include "GLFW/glfw3.h"
 #include "engine.h"
 #include "engine_commands.h"
+#include "game_commands.h"
 #include "level/level.h"
 #include "memory/allocation.h"
 #include "memory/arena.h"
@@ -20,6 +21,7 @@ void do_engine_setup(struct Game *game)
     engine_setup_imgui(game->engine);
     engine_setup_globals(game->engine);
     engine_register_commands();
+    game_register_commands();
 }
 
 Error game_build(struct Game *game, GLFWwindow *window, struct Arena *arena)

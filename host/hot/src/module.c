@@ -48,10 +48,12 @@ void update(struct HostContext *host)
 
     struct FrameContext frame = (struct FrameContext)
     {
-        .window=    host->window, 
-        .inputs=    host->inputinfo,
-        .dt=        host->delta_time,
-        .time=      host->time,
+        .window    = host->window, 
+        .inputs    = host->inputinfo,
+        .real_dt   = host->delta_time,
+        .real_time = host->time,
+        .dt   = 0,
+        .time = 0,
     };
 
     game_runtime_update(host->root, frame);

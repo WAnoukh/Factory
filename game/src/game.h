@@ -26,6 +26,8 @@ struct Game
 
     struct Worker  *workers;
     int             workers_count;
+
+    float time_scale;
 };
 
 void game_start(struct Game *game);
