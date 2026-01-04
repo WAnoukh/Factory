@@ -6,16 +6,8 @@
 
 #define WORKER_SPEED 3
 
-enum WorkerState
-{
-    WS_IDLE,
-    WS_REACHING,
-    WS_WORKING
-};
-
 struct Worker
 {
-    enum WorkerState state;
     vec2   pos;
     wid_t  work; 
 };

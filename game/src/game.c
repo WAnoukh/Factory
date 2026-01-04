@@ -130,6 +130,37 @@ void game_update(struct Game *game, struct FrameContext *frame)
             for(int y = (int)bound_min[1]; y < (int)bound_max[1]; ++y)
             {
                 ivec2 tile_pos = {x, y};
+
+                //Checking for pending work
+                wid_t existing_work = workpool_get_at(&game->workpool, x, y);
+                if(existing_work != WORK_INVALID)
+                {
+                    Work *work = workpool_get(&game->workpool, existing_work);
+                    if(work->tile == cur_tile) continue;
+                    workpool_remove(&game->workpool, existing_work);
+
+                }
+                //Checking for worker work
+                {
+                    int found = 0;
+                    for(int i = 0; i < game->workers_count; ++i)
+                    {
+                        struct Worker *worker = game->workers + i;
+                        if(worker->work == WORK_INVALID) continue;
+                        Work *work = workpool_get(&game->workpool, worker->work);
+                        if(work->position[0] == x && work->position[1] == y)
+                        {
+                            if(work->tile == cur_tile) { found = 1; break; }
+                            workpool_remove_owned(&game->workpool, worker->work);
+                            worker->work = WORK_INVALID;
+                            break;
+                        }
+                    }
+                    if (found) continue;
+                }
+                //Check tile under
+                if(tilemap_get_tile(&game->level->tilemap, x, y) == cur_tile) continue;
+
                 Error err = workpool_add_task(&game->workpool, work_create(tile_pos, cur_tile));
                 if(err)
                 {
@@ -147,15 +178,14 @@ void game_update(struct Game *game, struct FrameContext *frame)
     for(int i = 0; i < game->workers_count; ++i)
     {
         struct Worker *worker = game->workers + i;
-        if(available_work == WORK_INVALID && worker->state == WS_IDLE) 
+        if(available_work == WORK_INVALID && worker->work == WORK_INVALID) 
         {
             if(workpool_own_first(&game->workpool, &available_work) == ERR_OK)
             {
-                worker->state = WS_REACHING;
                 worker->work = available_work;
             }
         }
-        if(worker->state == WS_REACHING)
+        if(worker->work != WORK_INVALID)
         {
             Work *work = workpool_get(&game->workpool, worker->work);
 
@@ -165,7 +195,17 @@ void game_update(struct Game *game, struct FrameContext *frame)
             float target_dist = glm_vec2_norm(dir);
             if(target_dist < 0.5f)
             {
-                worker->state = WS_WORKING;
+                Work *work = workpool_get(&game->workpool, worker->work);
+                if(work->progression >= 1)
+                {
+                    workpool_remove_owned(&game->workpool, worker->work);
+                    worker->work = WORK_INVALID;
+                    tilemap_set_tile(&game->level->tilemap, work->tile, work->position[0], work->position[1]);
+                }
+                else
+                {
+                    work->progression += 0.5f * frame->dt;
+                }
             }
             else
             {
@@ -177,22 +217,7 @@ void game_update(struct Game *game, struct FrameContext *frame)
                 glm_vec2_add(worker->pos, speed, worker->pos);
             }
         }
-        if(worker->state == WS_WORKING)
-        {
-            Work *work = workpool_get(&game->workpool, worker->work);
-            if(work->progression >= 1)
-            {
-                workpool_remove_owned(&game->workpool, worker->work);
-                worker->state = WS_IDLE;
-                worker->work = WORK_INVALID;
-                tilemap_set_tile(&game->level->tilemap, work->tile, work->position[0], work->position[1]);
-            }
-            else
-            {
-                work->progression += 0.5f * frame->dt;
-            }
-        }
-        if(worker->state == WS_IDLE)
+        else
         {
             vec2 speed;
             float dist = glm_vec2_norm(worker->pos);
@@ -233,6 +258,7 @@ void game_update(struct Game *game, struct FrameContext *frame)
 
 
     //Draw build preview
+    if(dragging)
     {
         unsigned int shader = shaders_use_atlas(get_atlas_tilemap(), cur_tile_x, cur_tile_y);
 

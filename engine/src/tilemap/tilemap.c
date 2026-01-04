@@ -240,6 +240,14 @@ int is_tilemap_solid_at(struct TileMap *tilemap, ivec2 position)
    return tilemap_is_tile_solid(tilemap->tile[compute_index_from_position(tilemap, position)]);
 }
 
+int tilemap_get_tile(struct TileMap *tilemap, int x, int y)
+{
+    assert(tilemap);
+    assert( x >= 0 && x < tilemap->width && y >= 0 && y < tilemap->height);
+    size_t index = x + y * tilemap->height;
+    return tilemap->tile[index];
+}
+
 void tilemap_set_tile(struct TileMap *tilemap, int tile, int x, int y)
 {
     assert(tilemap);

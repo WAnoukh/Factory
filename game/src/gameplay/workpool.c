@@ -101,8 +101,61 @@ Error workpool_remove_owned(WorkPool *pool, wid_t owned_id)
     return ERR_OK;
 }
 
+Error workpool_remove(WorkPool *pool, wid_t id)
+{
+    assert(pool);
+    assert(pool->tail != WORK_INVALID);
+    assert(pool->head != WORK_INVALID);
+    assert(pool->count > 0);
+    wid_t cur = pool->head;
+
+    if(pool->head == id)
+    {
+        pool->head = pool->nodes[id].next;
+        if(pool->tail == id) { 
+            pool->tail = WORK_INVALID; 
+        }
+        goto end;
+    }
+
+    while(cur != WORK_INVALID)
+    {
+        WorkNode *cur_node = pool->nodes + cur;
+        wid_t next = cur_node->next; 
+        if(next == id)
+        {
+            if(pool->tail == id) { pool->tail = cur; }
+            cur_node->next = pool->nodes[id].next;
+            goto end;
+        }
+        cur = next;
+    }
+
+    return ERR_ELMT_NOT_FOUND;
+end:
+    pool->nodes[id].next = WORK_INVALID;
+    return workpool_remove_owned(pool, id);
+}
+
 Work *workpool_get(WorkPool *pool, wid_t work_id)
 {
+    assert(pool);
     return &pool->nodes[work_id].work;
 }
 
+wid_t workpool_get_at(WorkPool *pool, int x, int y)
+{
+    assert(pool);
+    wid_t cur = pool->head;
+
+    while(cur != WORK_INVALID)
+    {
+        Work *work = &pool->nodes[cur].work;
+        if(work->position[0] == x && work->position[1] == y)
+        {
+            break;
+        }
+        cur = pool->nodes[cur].next;
+    }
+    return cur;
+}

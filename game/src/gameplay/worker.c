@@ -6,7 +6,6 @@ void worker_defaults(struct Worker *worker)
     {
         .pos = {0, 0},
         .work = WORK_INVALID,
-        .state = WS_IDLE,
     };
 }
 

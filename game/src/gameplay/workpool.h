@@ -43,6 +43,10 @@ Error workpool_own_first(WorkPool *pool, wid_t *out_work_id);
 
 Error workpool_remove_owned(WorkPool *pool, wid_t owned_id);
 
+Error workpool_remove(WorkPool *pool, wid_t id);
+
 Work *workpool_get(WorkPool *pool, wid_t work_id);
+
+wid_t workpool_get_at(WorkPool *pool, int x, int y);
 
 #endif // TASK_SCHELUDER_H
