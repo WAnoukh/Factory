@@ -12,7 +12,7 @@ target_sources(game
 
     ./src/level/level.c
 
-    ./src/gameplay/task_scheluder.c
+    ./src/gameplay/workpool.c
     ./src/gameplay/worker.c
 )
 

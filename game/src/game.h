@@ -2,7 +2,7 @@
 #define GAME_H
 
 #include "camera/top_down_camera.h"
-#include "gameplay/task_scheluder.h"
+#include "gameplay/workpool.h"
 #include "rendering/camera.h"
 
 typedef struct GLFWwindow GLFWwindow;

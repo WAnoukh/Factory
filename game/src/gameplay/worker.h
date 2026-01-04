@@ -2,7 +2,7 @@
 #define WORKER_H
 
 #include "cglm/types.h"
-#include "gameplay/task_scheluder.h"
+#include "gameplay/workpool.h"
 
 #define WORKER_SPEED 3
 
