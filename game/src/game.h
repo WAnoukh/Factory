@@ -27,7 +27,8 @@ struct Game
     struct Worker  *workers;
     int             workers_count;
 
-    float time_scale;
+    float   time_scale;
+    int     money;
 };
 
 void game_start(struct Game *game);

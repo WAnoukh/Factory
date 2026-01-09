@@ -22,6 +22,8 @@
 
 #define WORKERS_MAX 10
 
+#define TILE_COST 10
+
 void game_start(struct Game *game)
 {
     game->time_scale = 1;
@@ -45,6 +47,8 @@ void game_start(struct Game *game)
     {
         worker_defaults(game->workers + i);
     }
+
+    game->money = 10000;
 }
 
 int dragging = 0;
@@ -60,6 +64,45 @@ void pixel_to_world(struct Camera *camera, struct WindowContext *window, const v
             pixel[0] / (float)window->width, 
             1 - (pixel[1] / (float)window->height)}
             ,out_world);
+}
+
+void draw_ui(struct Game *game, struct FrameContext *frame)
+{
+    assert(game);
+    assert(frame);
+
+    struct InputInfo        inputs = frame->inputs;
+    struct WindowContext    window = frame->window;
+
+    mat3 char_transform;
+
+
+    const float char_ratio = 5.f/3;
+    const float char_width = 0.01f;
+    const float char_height = char_width * char_ratio;
+
+    const float start_offset = 0.03f;
+    vec2 draw_pos = {(start_offset+char_width/2), 1-(start_offset+char_height/2)*window.ratio};
+    vec2 draw_size = {char_width, char_height*window.ratio};
+
+    compute_transform(char_transform, draw_pos, draw_size);
+    unsigned int char_shader = shaders_use_atlas(get_texture_font_atlas(), 5, 3);
+    draw_transformed_quad_screen_space(char_shader, char_transform, (float[]){1,1,1}, 1);
+
+    char money_string[16];
+    itoa(game->money, money_string, 10);
+    char *cur_char = money_string;
+    while(*cur_char != '\0')
+    {
+        draw_pos[0] += char_width * 1.1f;
+        int atlas_x, atlas_y;
+        int atlas_index = 40 + *cur_char - '0';
+        atlas_index_to_coordinates(get_texture_font_atlas(), atlas_index, &atlas_x, &atlas_y);
+        unsigned int char_shader = shaders_use_atlas(get_texture_font_atlas(), atlas_x, atlas_y);
+        compute_transform(char_transform, draw_pos, draw_size);
+        draw_transformed_quad_screen_space(char_shader, char_transform, (float[]){1,1,1}, 1);
+        ++cur_char;
+    }
 }
 
 void game_update(struct Game *game, struct FrameContext *frame)
@@ -83,6 +126,11 @@ void game_update(struct Game *game, struct FrameContext *frame)
     if(is_key_pressed(inputs, GLFW_KEY_GRAVE_ACCENT))
     {
         engine->show_console = !engine->show_console;
+    }
+
+    if(is_key_pressed(inputs, GLFW_KEY_SPACE))
+    {
+        game->time_scale = game->time_scale ? 0 : 1;
     }
 
     tdcamera_update(&game->tdcamera, frame);
@@ -124,10 +172,15 @@ void game_update(struct Game *game, struct FrameContext *frame)
     if(dragging && !is_mouse_down(inputs, 0))
     {
         dragging = 0;
+        glm_vec2_copy(world_mouse_pos, drag_start);
         
-        for(int x = (int)bound_min[0]; x < (int)bound_max[0]; x+=1)
+        int x_start = (int)glm_max(bound_min[0], 0);
+        int y_start = (int)glm_max(bound_min[1], 0);
+        int x_end   = glm_imin((int)bound_max[0], game->level->tilemap.width);
+        int y_end   = glm_imin((int)bound_max[1], game->level->tilemap.height);
+        for(int x = x_start; x < x_end; x+=1)
         {
-            for(int y = (int)bound_min[1]; y < (int)bound_max[1]; ++y)
+            for(int y = y_start; y < y_end; ++y)
             {
                 ivec2 tile_pos = {x, y};
 
@@ -161,6 +214,8 @@ void game_update(struct Game *game, struct FrameContext *frame)
                 //Check tile under
                 if(tilemap_get_tile(&game->level->tilemap, x, y) == cur_tile) continue;
 
+                if(game->money < TILE_COST) continue;
+                game->money -= TILE_COST;
                 Error err = workpool_add_task(&game->workpool, work_create(tile_pos, cur_tile));
                 if(err)
                 {
@@ -258,7 +313,6 @@ void game_update(struct Game *game, struct FrameContext *frame)
 
 
     //Draw build preview
-    if(dragging)
     {
         unsigned int shader = shaders_use_atlas(get_atlas_tilemap(), cur_tile_x, cur_tile_y);
 
@@ -318,4 +372,6 @@ void game_update(struct Game *game, struct FrameContext *frame)
         compute_transform(worker_transform, worker->pos, (vec2){1,1});
         draw_transformed_quad(shaders_use_sprite(get_texture_worker()), worker_transform, (float[]){1, 1, 1}, 1);
     }
+
+    draw_ui(game, frame);
 }
