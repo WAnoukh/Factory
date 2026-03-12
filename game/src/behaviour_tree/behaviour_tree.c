@@ -2,7 +2,7 @@
 #include "console/log.h"
 #include <assert.h>
 
-BT_Tree BT_init()
+BT_Tree bt_init()
 {
     return (BT_Tree){};
 }
@@ -11,7 +11,7 @@ void stack_push(BT_Runtime *runtime, BT_Index node);
 int node_tick(BT_Tree *tree, BT_Runtime *runtime, BT_BlackBoard *bb);
 void stack_pop(BT_Runtime *runtime);
 
-void BT_tick(BT_Tree *tree, BT_Runtime *runtime, BT_BlackBoard *bb)
+void bt_tick(BT_Tree *tree, BT_Runtime *runtime, BT_BlackBoard *bb)
 {
     if(runtime->stack_count <= 0)
     {
@@ -128,7 +128,7 @@ BT_Index BT_add_sequ_node(BT_Tree *tree, BT_Index *indices, int indices_count)
     return index;
 }
 
-BT_Index BT_add_fallback_node(BT_Tree *tree, BT_Index *indices, int indices_count)
+BT_Index bt_add_fallback_node(BT_Tree *tree, BT_Index *indices, int indices_count)
 {
     BT_Index index = tree->node_count++;
     BT_Node *node = tree->nodes + index; 

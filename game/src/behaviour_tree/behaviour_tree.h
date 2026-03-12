@@ -1,6 +1,7 @@
 #ifndef BEHAVIOUR_TREE_H
 #define BEHAVIOUR_TREE_H
 
+#include "gameplay/workpool.h"
 #include <stddef.h>
 
 #define BT_STACK_SIZE 100
@@ -23,7 +24,17 @@ enum BT_Exec_State
 
 typedef struct BT_BlackBoard
 {
-    int counter;
+    int worker_index;
+    int said_hello;
+    struct Game *game;
+    struct FrameContext *frame;
+    int assigned_zone;
+    wid_t work;
+    int is_working;
+    float progress;
+
+    vec2 wander_dir;
+    float wander_remaining;
 } BT_BlackBoard;
 
 typedef enum BT_Exec_State (*BT_Action)(BT_BlackBoard *bb);
@@ -58,14 +69,14 @@ typedef struct BT_Tree
     BT_Index    first;
 } BT_Tree;
 
-BT_Tree BT_init();
+BT_Tree bt_init();
 
-void BT_tick(BT_Tree *tree, BT_Runtime *runtime, BT_BlackBoard *bb);
+void bt_tick(BT_Tree *tree, BT_Runtime *runtime, BT_BlackBoard *bb);
 
 BT_Index BT_add_exec_node(BT_Tree *tree, BT_Action action);
 
 BT_Index BT_add_sequ_node(BT_Tree *tree, BT_Index *indices, int indices_count);
 
-BT_Index BT_add_fallback_node(BT_Tree *tree, BT_Index *indices, int indices_count);
+BT_Index bt_add_fallback_node(BT_Tree *tree, BT_Index *indices, int indices_count);
  
 #endif // BEHAVIOUR_TREE_H

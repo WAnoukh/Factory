@@ -4,7 +4,7 @@
 #include "cglm/types.h"
 #include "gameplay/workpool.h"
 
-#define WORKER_SPEED 3
+#define WORKER_SPEED 8
 
 struct Worker
 {

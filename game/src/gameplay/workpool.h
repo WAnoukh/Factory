@@ -3,6 +3,7 @@
 
 #include "cglm/types.h"
 #include "error/error.h"
+#include "level/level.h"
 #include <stddef.h>
 
 typedef size_t wid_t;
@@ -40,6 +41,8 @@ void workpool_defaults(WorkPool *pool);
 Error workpool_add_task(WorkPool *pool, Work work);
 
 Error workpool_own_first(WorkPool *pool, wid_t *out_work_id);
+
+Error workpool_own_first_in_zone(WorkPool *pool, Zone *zone, wid_t *out_work_id);
 
 Error workpool_remove_owned(WorkPool *pool, wid_t owned_id);
 

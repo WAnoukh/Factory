@@ -86,6 +86,62 @@ Error workpool_own_first(WorkPool *pool, wid_t *out_work_id)
     return ERR_OK;
 }
 
+Error workpool_own_first_in_zone(WorkPool *pool, Zone *zone, wid_t *out_work_id)
+{
+    assert(pool);
+    assert(zone);
+    if(pool->head == WORK_INVALID)
+    {
+       return ERR_CONTAINER_EMPTY; 
+    }
+
+    wid_t wid = pool->head;
+    wid_t prec = WORK_INVALID;
+    WorkNode *cur_node = pool->nodes + wid;
+    int *work_pos = cur_node->work.position;
+
+    int minx = zone->pos[0] * ZONE_SIZE;
+    int maxx = (zone->pos[0] + 1) * ZONE_SIZE; 
+    int miny = zone->pos[1] * ZONE_SIZE;
+    int maxy = (zone->pos[1] + 1) * ZONE_SIZE; 
+
+    int inx = minx <= work_pos[0] && work_pos[0] < maxx;
+    int iny = miny <= work_pos[1] && work_pos[1] < maxy;
+
+    while( !(inx && iny) )
+    {
+        if(wid == WORK_INVALID)
+        {
+            return ERR_CONTAINER_EMPTY;
+        }
+        prec = wid;
+        wid = cur_node->next;
+        cur_node = pool->nodes + wid;
+        work_pos = cur_node->work.position;
+        inx = minx <= work_pos[0] && work_pos[0] < maxx;
+        iny = miny <= work_pos[1] && work_pos[1] < maxy;
+    }
+
+
+    if(prec == WORK_INVALID)
+    {
+        pool->head = cur_node->next;
+    }
+    else
+    {
+        pool->nodes[prec].next = cur_node->next;
+    }
+
+    if(wid == pool->tail)
+    {
+        pool->tail = WORK_INVALID;
+    }
+
+    cur_node->next = WORK_INVALID;
+    *out_work_id = wid;
+    return ERR_OK;
+}
+
 Error workpool_remove_owned(WorkPool *pool, wid_t owned_id)
 {
     assert(owned_id != WORK_INVALID);
