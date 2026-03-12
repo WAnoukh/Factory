@@ -244,7 +244,7 @@ int tilemap_get_tile(struct TileMap *tilemap, int x, int y)
 {
     assert(tilemap);
     assert( x >= 0 && x < tilemap->width && y >= 0 && y < tilemap->height);
-    size_t index = x + y * tilemap->height;
+    size_t index = x + y * tilemap->width;
     return tilemap->tile[index];
 }
 
@@ -252,7 +252,7 @@ void tilemap_set_tile(struct TileMap *tilemap, int tile, int x, int y)
 {
     assert(tilemap);
     assert( x >= 0 && x < tilemap->width && y >= 0 && y < tilemap->height);
-    size_t index = x + y * tilemap->height;
+    size_t index = x + y * tilemap->width;
     tilemap->tile[index] = tile; 
 }
 

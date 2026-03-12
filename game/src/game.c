@@ -52,8 +52,11 @@ void game_start(struct Game *game)
     {
         worker_defaults(game->workers + i);
         BT_BlackBoard *bb = game->w_bb + i;
-        bb->worker_index = i;
-        bb->game = game;
+        *bb = (BT_BlackBoard){
+            .worker_index = i,
+            .game = game,
+            .work = WORK_INVALID,
+        };
     }
 
     game->money = 10000;

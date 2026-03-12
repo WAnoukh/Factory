@@ -90,13 +90,14 @@ Error workpool_own_first_in_zone(WorkPool *pool, Zone *zone, wid_t *out_work_id)
 {
     assert(pool);
     assert(zone);
+
     if(pool->head == WORK_INVALID)
     {
        return ERR_CONTAINER_EMPTY; 
     }
 
     wid_t wid = pool->head;
-    wid_t prec = WORK_INVALID;
+    wid_t prev = WORK_INVALID;
     WorkNode *cur_node = pool->nodes + wid;
     int *work_pos = cur_node->work.position;
 
@@ -110,12 +111,12 @@ Error workpool_own_first_in_zone(WorkPool *pool, Zone *zone, wid_t *out_work_id)
 
     while( !(inx && iny) )
     {
+        prev = wid;
+        wid = cur_node->next;
         if(wid == WORK_INVALID)
         {
             return ERR_CONTAINER_EMPTY;
         }
-        prec = wid;
-        wid = cur_node->next;
         cur_node = pool->nodes + wid;
         work_pos = cur_node->work.position;
         inx = minx <= work_pos[0] && work_pos[0] < maxx;
@@ -123,18 +124,18 @@ Error workpool_own_first_in_zone(WorkPool *pool, Zone *zone, wid_t *out_work_id)
     }
 
 
-    if(prec == WORK_INVALID)
+    if(prev == WORK_INVALID)
     {
         pool->head = cur_node->next;
     }
     else
     {
-        pool->nodes[prec].next = cur_node->next;
+        pool->nodes[prev].next = cur_node->next;
     }
 
     if(wid == pool->tail)
     {
-        pool->tail = WORK_INVALID;
+        pool->tail = prev;
     }
 
     cur_node->next = WORK_INVALID;
