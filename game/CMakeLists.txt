@@ -14,6 +14,7 @@ target_sources(game
 
     ./src/gameplay/workpool.c
     ./src/gameplay/worker.c
+    ./src/gameplay/worker_behaviour.c
 
     ./src/behaviour_tree/behaviour_tree.c
 )
