@@ -29,7 +29,7 @@ void game_start(struct Game *game)
     game->time_scale = 1;
     game->camera = camera_get_default();
     rendering_set_camera(&game->camera);
-    game->level = level_create_empty(20, 20, game->arenas->level);
+    game->level = level_create_empty(50, 50, game->arenas->level);
     tilemap_fill(&game->level->tilemap, 1);
     game->level->tilemap.tile[0] = 2;
     tdcamera_defaults(&game->tdcamera);
@@ -152,6 +152,23 @@ void game_update(struct Game *game, struct FrameContext *frame)
         drag_start_pixel[0] = inputs.mouse_x;
         drag_start_pixel[1] = inputs.mouse_y;
         pixel_to_world(&game->camera, &window, drag_start_pixel, drag_start);
+    }
+
+    //create box
+    int spawn_point_available= 1;
+    for(int i = 0; i < game->box_count; ++i)
+    {
+        float *pos = game->box[i];
+        if(pos[0] == 0 && pos[1] == 0)
+        {
+            spawn_point_available = 0;
+            break;
+        }
+    }
+    if(spawn_point_available)
+    {
+        assert(game->box_count >= BOX_MAX);
+        glm_vec2_copy((vec2){0, 0}, game->box[game->box_count++]) ;
     }
     
     //calculate drag bounding
@@ -362,6 +379,16 @@ void game_update(struct Game *game, struct FrameContext *frame)
         atlas_index_to_coordinates(get_atlas_tilemap(), work->tile-1, &tile_x, &tile_y);
         unsigned int shader = shaders_use_atlas(get_atlas_tilemap(), tile_x, tile_y);
         draw_transformed_quad(shader, work_transform, (float[]){1, 1, 1}, 0.6f);
+    }
+    //
+    //Draw box 
+    for(int i = 0; i < game->box_count; ++i)
+    {
+        vec2 pos;
+        glm_vec2_add(game->box[i], (vec2){0.5f, 0.5f}, pos);
+        mat3 box_transform; 
+        compute_transform(box_transform, pos, (vec2){1,1});
+        draw_transformed_quad(shaders_use_sprite(get_texture_box()), box_transform, (float[]){1, 1, 1}, 1);
     }
 
     //Draw workers

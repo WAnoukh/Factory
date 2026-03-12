@@ -15,6 +15,7 @@ struct TextureInfo
     struct TextureAtlas atlas_font;
     struct TextureAtlas atlas_tilemap;
     unsigned int texture_worker;
+    unsigned int texture_box;
 };
 
 void texture_set_info(struct TextureInfo *info);
@@ -24,6 +25,8 @@ struct TextureAtlas get_texture_font_atlas();
 struct TextureAtlas get_atlas_tilemap();
 
 unsigned int get_texture_worker();
+
+unsigned int get_texture_box();
 
 void load_default_images();
 

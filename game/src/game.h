@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+#define BOX_MAX 100
+
 #include "camera/top_down_camera.h"
 #include "gameplay/workpool.h"
 #include "rendering/camera.h"
@@ -26,6 +28,9 @@ struct Game
 
     struct Worker  *workers;
     int             workers_count;
+
+    vec2    box[BOX_MAX];
+    int     box_count;
 
     float   time_scale;
     int     money;

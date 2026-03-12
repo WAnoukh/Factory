@@ -8,8 +8,9 @@
 
 struct Worker
 {
-    vec2   pos;
-    wid_t  work; 
+    vec2    pos;
+    wid_t   work; 
+    int     is_holding_box; 
 };
 
 void worker_defaults(struct Worker *worker);

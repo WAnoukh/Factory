@@ -29,6 +29,12 @@ unsigned int get_texture_worker()
     return textureinfo->texture_worker;
 }
 
+unsigned int get_texture_box()
+{
+    assert(textureinfo);
+    return textureinfo->texture_box;
+}
+
 GLuint texture_load(char* path)
 {
     GLuint texture;
@@ -65,7 +71,8 @@ void load_default_images()
     textureinfo->atlas_font.height = 5;
     textureinfo->atlas_tilemap.texture_id = texture_load("resources/sprite/TileMap.png");
     textureinfo->atlas_tilemap.width = 16;
-    textureinfo->atlas_tilemap.height = 16;
+    textureinfo->atlas_tilemap.height = 20;
     textureinfo->texture_worker = texture_load("resources/sprite/worker.png");
+    textureinfo->texture_box = texture_load("resources/sprite/box.png");
 }
 
